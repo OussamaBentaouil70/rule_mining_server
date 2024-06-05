@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
+
+from myapp.views import extract_token_from_headers
 load_dotenv() ## loading all the environment variables
-from urllib.request import HTTPBasicAuthHandler
 from django.shortcuts import render
 from django.http import JsonResponse
 # prevent unauthorized POST requests from malicious websites.
@@ -127,14 +128,17 @@ def retrieve_rule_by_similarity(prompt, tag):
 
 # View to generate text using Mistral API and retrieve rules based on a tag matching the prompt
 @csrf_exempt
+@extract_token_from_headers
 def generate_text(request):
     if request.method == 'POST':
         try:
+            user = request.user
             # Parse the JSON data from the request body
             data = json.loads(request.body.decode('utf-8'))
+            
             prompt = data.get('prompt')
-            tag = data.get('tag')  # Extract the tag from the request
-
+            tag = user.get('fonction')  # Extract the tag from the request
+            print(tag)
             if not prompt:
                 return JsonResponse({'error': 'Missing prompt'}, status=400)
             
@@ -179,6 +183,7 @@ def generate_text(request):
 
 # View to generate text using Mistral API and retrieve rules based on a tag matching the prompt
 @csrf_exempt
+@extract_token_from_headers
 def get_response_from_prompt(request):
     if request.method == 'POST':
         try:

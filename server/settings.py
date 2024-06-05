@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'myapp'
+    'myapp',
+    'mistral'
 ]
 
 MIDDLEWARE = [
@@ -133,6 +134,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
@@ -140,7 +143,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 
-PASSWORD= 'kl8mEE84P8a+_zZPofjn'
+PASSWORD= 'Nfk6eckgfUx0jhTcPb_G'
 
 MONGO_URI = 'mongodb+srv://bentaouiloussama:B7kSFB59sVz39b7l@cluster0.z3xqhep.mongodb.net/rule_mining'
 MONGO_DB_NAME = 'rule_mining'

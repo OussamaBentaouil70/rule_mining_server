@@ -160,21 +160,24 @@ def logout(request):
 @extract_token_from_headers
 @require_http_methods(["POST"])
 def create_member_by_owner(request):
-    owner = request.user
-
-    if owner.role != "owner":
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
-
-    data = json.loads(request.body.decode('utf-8'))
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-    fonction = data.get('fonction')
-
-    if not fonction:
-        return JsonResponse({'error': 'Fonction is required'}, status=400)
-
     try:
+        owner_data = request.user
+
+        # Retrieve the Owner instance based on the user_id from the token
+        owner = Owner.objects.get(id=owner_data['user_id'])
+
+        if owner.role != "owner":
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+        data = json.loads(request.body.decode('utf-8'))
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        fonction = data.get('fonction')
+
+        if not fonction:
+            return JsonResponse({'error': 'Fonction is required'}, status=400)
+
         if Member.objects.filter(username=username).exists() or Member.objects.filter(email=email).exists():
             return JsonResponse({'error': 'Username or email already exists'}, status=400)
 
@@ -185,11 +188,8 @@ def create_member_by_owner(request):
             password=hashed_password,
             role="member",
             fonction=fonction,
-            owner=owner
+            owner=owner  # Assign the Owner instance directly
         )
-
-        owner.members.add(new_member)
-        owner.save()
 
         return JsonResponse({
             'id': new_member.id,
@@ -200,16 +200,22 @@ def create_member_by_owner(request):
             'owner': new_member.owner.id
         }, status=201)
 
+    except Owner.DoesNotExist:
+        return JsonResponse({'error': 'Owner not found'}, status=404)
     except Exception as e:
         print("Error creating member by owner", e)
         return JsonResponse({'error': 'Internal server error'}, status=500)
+
 
 @csrf_exempt
 @extract_token_from_headers
 @require_http_methods(["PUT"])
 def update_member_by_owner(request, user_id):
-    owner = request.user
+    owner_data = request.user
 
+        # Retrieve the Owner instance based on the user_id from the token
+    owner = Owner.objects.get(id=owner_data['user_id'])
+    
     if owner.role != "owner":
         return JsonResponse({'error': 'Unauthorized'}, status=403)
 
@@ -315,69 +321,8 @@ def get_member_by_id(request, member_id):
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
-# def create_dynamic_model_class(tag):
-#     class Meta:
-#         managed = False
 
-#     attrs = {
-#         '__module__': __name__,
-#         'tag': models.CharField(max_length=100),
-#         'name': models.CharField(max_length=255),
-#         'description': models.TextField(),
-#         'Meta': Meta,
-#     }
-
-#     model_class = type(f'Rule_{tag.replace(" ", "_")}', (models.Model,), attrs)
-#     return model_class
-
-
-
-# @extract_token_from_headers
-# def get_rules_by_tag(request):
-#     try:
-#         fonction = request.user.get('fonction')
-#         print(fonction)
-#         query = {
-#             "query": {
-#                 "match": {
-#                     "tag": fonction,
-#                 },
-#             },
-#         }
-
-#         url = "https://localhost:9200/rules/_search?filter_path=hits.hits._source"
-
-#         auth_header = "Basic " + base64.b64encode(f"elastic:{settings.PASSWORD}".encode()).decode()
-
-#         # Create an https agent to ignore self-signed certificate errors
-#         response = requests.post(url, headers={"Content-Type": "application/json", "Authorization": auth_header}, json=query, verify=False)
-
-#         if not response.ok:
-#             raise Exception("Failed to fetch rules by tag")
-
-#         data = response.json()
-#         source_array = [hit["_source"] for hit in data["hits"]["hits"]]
-
-#         existing_rules = Rule.objects.filter(tag__in=[rule["tag"] for rule in source_array])
-#         existing_tags = [rule.tag for rule in existing_rules]
-
-#         for rule in source_array:
-#             if rule["tag"] not in existing_tags:
-#                 new_rule = Rule.objects.create(
-#                     name=rule["name"],
-#                     description=rule["description"],
-#                     tag=rule["tag"]
-#                 )
-     
-#                 # In Django, you do not need to create dynamically named collections like in MongoDB
-
-#         return JsonResponse(source_array, safe=False, status=200)  # Set safe parameter to False
-
-#     except Exception as e:
-#         print("Error while fetching rules by tag", e)
-#         return JsonResponse({'error': 'Internal server error'}, status=500)
     
-
 @extract_token_from_headers
 def get_rules_by_tag(request):
     try:
