@@ -8,7 +8,7 @@ class CustomAuthenticationMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path in ['/api/register/', '/api/login/']:
+        if request.path in ['/api/register/', '/api/login/', "/api/logout/", "/api/profile/"]:
             return self.get_response(request)
 
         token = request.COOKIES.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')

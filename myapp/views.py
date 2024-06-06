@@ -104,6 +104,7 @@ def login_user(request):
 
             token_payload = {
                 'user_id': user.id,
+                "username": user.username,
                 'email': user.email,
                 'role': user.role,
                 'fonction': user.fonction,
@@ -116,6 +117,7 @@ def login_user(request):
                 'token': token,
                 'user': {
                     'id': user.id,
+                    "username": user.username,
                     'email': user.email,
                     'role': user.role,
                     'fonction': user.fonction
@@ -133,18 +135,14 @@ def login_user(request):
 
 
 @csrf_exempt
+@extract_token_from_headers
 def get_profile(request):
-    token = request.COOKIES.get('token')
-    if token:
-        try:
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            return JsonResponse(decoded_token)
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({'error': 'Token has expired'}, status=400)
-        except jwt.InvalidTokenError:
-            return JsonResponse({'error': 'Invalid token'}, status=400)
+    print("Decoded user from token:", request.user)
+    if request.user:
+        return JsonResponse(request.user)
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=400)
+
 
 @csrf_exempt
 def logout(request):
@@ -255,7 +253,10 @@ def update_member_by_owner(request, user_id):
 @extract_token_from_headers
 @require_http_methods(["DELETE"])
 def delete_member_by_owner(request, user_id):
-    owner = request.user
+    owner_data = request.user
+
+        # Retrieve the Owner instance based on the user_id from the token
+    owner = Owner.objects.get(id=owner_data['user_id'])
 
     if owner.role != "owner":
         return JsonResponse({'error': 'Unauthorized'}, status=403)
@@ -277,13 +278,16 @@ def delete_member_by_owner(request, user_id):
 @extract_token_from_headers
 @require_http_methods(["GET"])
 def list_members_by_owner(request):
-    owner = request.user
-
+    owner_data = request.user
+    print(owner_data)
+        # Retrieve the Owner instance based on the user_id from the token
+    owner = Owner.objects.get(id=owner_data['user_id'])
+    print(owner.id)
     if owner.role != "owner":
         return JsonResponse({'error': 'Unauthorized'}, status=403)
 
     try:
-        members = Member.objects.filter(owner=owner)
+        members = Member.objects.filter(owner=owner.id)
         members_list = [{'id': member.id, 'username': member.username, 'email': member.email, 'role': member.role, 'fonction': member.fonction} for member in members]
 
         return JsonResponse(members_list, safe=False, status=200)
@@ -296,7 +300,11 @@ def list_members_by_owner(request):
 @extract_token_from_headers
 @require_http_methods(["GET"])
 def get_member_by_id(request, member_id):
-    owner = request.user
+    print("View function called with method:", request.method)
+    owner_data = request.user
+
+        # Retrieve the Owner instance based on the user_id from the token
+    owner = Owner.objects.get(id=owner_data['user_id'])
 
     if owner.role != "owner":
         return JsonResponse({'error': 'Unauthorized'}, status=403)

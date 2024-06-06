@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from corsheaders.defaults import default_headers  # Ensure this import is here
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,23 +38,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
+    'corsheaders',  # Ensure corsheaders is listed here
     'myapp',
-    'mistral'
+    'mistral',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CorsMiddleware should be at the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'myapp.middleware.authentication_middleware.CustomAuthenticationMiddleware',  # Add this line
+    'myapp.middleware.authentication_middleware.CustomAuthenticationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
-
 
 ROOT_URLCONF = 'server.urls'
 
@@ -133,17 +133,18 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-
-
+# CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'Authorization',
+]
 
-PASSWORD= 'Nfk6eckgfUx0jhTcPb_G'
-
+# Additional settings for your database and other configurations
+PASSWORD = 'Nfk6eckgfUx0jhTcPb_G'
 MONGO_URI = 'mongodb+srv://bentaouiloussama:B7kSFB59sVz39b7l@cluster0.z3xqhep.mongodb.net/rule_mining'
 MONGO_DB_NAME = 'rule_mining'
