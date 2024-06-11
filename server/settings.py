@@ -147,12 +147,12 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 
 # Additional settings for your database and other configurations
-PASSWORD = 'kl8mEE84P8a+_zZPofjn'
+PASSWORD = 'Nfk6eckgfUx0jhTcPb_G'
 MONGO_URI = 'mongodb+srv://bentaouiloussama:B7kSFB59sVz39b7l@cluster0.z3xqhep.mongodb.net/rule_mining'
 MONGO_DB_NAME = 'rule_mining'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-# Other password for elasticsearch : Nfk6eckgfUx0jhTcPb_G   
+# Other password for elasticsearch : Nfk6eckgfUx0jhTcPb_G   //  kl8mEE84P8a+_zZPofjn
 
 
 

@@ -434,7 +434,6 @@ def delete_rule(request, rule_id):
 
 
 @csrf_exempt
-@extract_token_from_headers
 @require_http_methods(["PUT"])
 def update_user_profile(request):
     try:
@@ -489,6 +488,8 @@ def update_user_profile(request):
 
     except Model.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
+    except ValueError as ve:
+        return JsonResponse({'error': str(ve)}, status=400)
     except Exception as e:
         print("Error updating user profile", e)
         return JsonResponse({'error': 'Internal server error'}, status=500)
