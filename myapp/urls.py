@@ -1,5 +1,5 @@
 from django.urls import path
-from myapp.views import create_member_by_owner, delete_rule, get_profile, get_rules_by_tag, login_user, logout, register_user, update_member_by_owner, delete_member_by_owner, list_members_by_owner, get_member_by_id
+from myapp.views import create_member_by_owner, delete_rule, get_profile, get_rules_by_tag, login_user, logout, register_user, update_member_by_owner, delete_member_by_owner, list_members_by_owner, get_member_by_id, update_user_profile
 
 urlpatterns = [
     path('create_member/', create_member_by_owner, name='create_member_by_owner'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('login/', login_user, name='login'),
     path('profile/', get_profile, name='profile'),
     path('logout/', logout, name='logout'),
+    path('update_profile/', update_user_profile, name='update_user_profile'),
 ]

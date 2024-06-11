@@ -1,4 +1,5 @@
 import base64
+import os
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,6 +16,8 @@ from myapp.models import Rule
 import json
 from django.db import models
 from pymongo import MongoClient
+from django.core.files.storage import default_storage
+import cloudinary.uploader
 
 User = get_user_model()
 
@@ -168,10 +171,14 @@ def create_member_by_owner(request):
             return JsonResponse({'error': 'Unauthorized'}, status=403)
 
         data = json.loads(request.body.decode('utf-8'))
+        full_name = data.get('full_name')
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
         fonction = data.get('fonction')
+        phone_number = data.get('phone_number')
+        bio = data.get('bio')
+        address = data.get('address')
 
         if not fonction:
             return JsonResponse({'error': 'Fonction is required'}, status=400)
@@ -183,20 +190,28 @@ def create_member_by_owner(request):
 
         hashed_password = make_password(password)
         new_member = Member.objects.create(
+            full_name=full_name,
             username=username,
             email=email,
             password=hashed_password,
             role="member",
             fonction=fonction,
+            phone_number=phone_number,
+            bio=bio,
+            address=address,
             owner=owner  # Assign the Owner instance directly
         )
 
         return JsonResponse({
             'id': new_member.id,
             'username': new_member.username,
+            'full_name': new_member.full_name,
             'email': new_member.email,
             'role': new_member.role,
             'fonction': new_member.fonction,
+            'phone_number': new_member.phone_number,
+            'bio': new_member.bio,
+            'address': new_member.address,
             'owner': new_member.owner.id
         }, status=201)
 
@@ -241,6 +256,7 @@ def update_member_by_owner(request, user_id):
         member = Member.objects.get(id=user_id)
         return JsonResponse({
             'id': member.id,
+            'full_name': member.full_name,
             'username': member.username,
             'email': member.email,
             'role': member.role,
@@ -282,22 +298,31 @@ def delete_member_by_owner(request, user_id):
 @require_http_methods(["GET"])
 def list_members_by_owner(request):
     owner_data = request.user
-    print(owner_data)
-        # Retrieve the Owner instance based on the user_id from the token
-    owner = Owner.objects.get(id=owner_data['user_id'])
-    print(owner.id)
-    if owner.role != "owner":
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
 
     try:
+        owner = Owner.objects.get(id=owner_data['user_id'])
+
+        if owner.role != "owner":
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+
         members = Member.objects.filter(owner=owner.id)
-        members_list = [{'id': member.id, 'username': member.username, 'email': member.email, 'role': member.role, 'fonction': member.fonction} for member in members]
+        members_list = [{
+            'id': member.id, 
+            'username': member.username, 
+            'email': member.email, 
+            'role': member.role, 
+            'fonction': member.fonction,
+            'avatar': member.avatar.url if member.avatar else None  # Convert avatar to URL
+        } for member in members]
 
         return JsonResponse(members_list, safe=False, status=200)
 
+    except Owner.DoesNotExist:
+        return JsonResponse({'error': 'Owner not found'}, status=404)
     except Exception as e:
         print("Error listing members by owner", e)
         return JsonResponse({'error': 'Internal server error'}, status=500)
+
 
 @csrf_exempt
 @extract_token_from_headers
@@ -324,6 +349,11 @@ def get_member_by_id(request, member_id):
             'email': member.email,
             'role': member.role,
             'fonction': member.fonction,
+            'full_name': member.full_name,
+            'address': member.address,
+            'phone_number': member.phone_number,
+            'bio': member.bio,
+            'avatar': member.avatar.url if member.avatar else None,# Convert avatar to URL
             'owner': member.owner.id
         }, status=200)
 
@@ -396,4 +426,69 @@ def delete_rule(request, rule_id):
 
     except Exception as e:
         print("Error deleting rule", e)
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+    
+
+
+
+
+
+@csrf_exempt
+@extract_token_from_headers
+@require_http_methods(["PUT"])
+def update_user_profile(request):
+    try:
+        user_data = request.user
+        user_id = user_data['user_id']
+        role = user_data['role']
+
+        Model = get_user_model(role)
+        user = Model.objects.get(id=user_id)
+
+        data = request.POST.get('data')
+        if data:
+            data = json.loads(data)  # Extracting JSON data
+
+        avatar_file = request.FILES.get('avatar')  # Extracting avatar file
+
+        if avatar_file:  # If avatar file is provided, handle avatar update with Cloudinary
+            upload_result = cloudinary.uploader.upload(avatar_file)
+            user.avatar = upload_result['url']
+
+        # Update other user fields based on the JSON data
+        if data:
+            if 'username' in data:
+                user.username = data['username']
+            if 'email' in data:
+                user.email = data['email']
+            if 'full_name' in data:
+                user.full_name = data['full_name']
+            if 'address' in data:
+                user.address = data['address']
+            if 'phone_number' in data:
+                user.phone_number = data['phone_number']
+            if 'bio' in data:
+                user.bio = data['bio']
+
+        user.save()
+
+        response_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'full_name': user.full_name,
+            'address': user.address,
+            'phone_number': user.phone_number,
+            'bio': user.bio,
+            'role': user.role,
+            'fonction': user.fonction,
+            'avatar': user.avatar.url if user.avatar else None
+        }
+
+        return JsonResponse(response_data, status=200)
+
+    except Model.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    except Exception as e:
+        print("Error updating user profile", e)
         return JsonResponse({'error': 'Internal server error'}, status=500)

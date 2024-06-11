@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 from corsheaders.defaults import default_headers  # Ensure this import is here
-
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -148,5 +150,20 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 PASSWORD = 'kl8mEE84P8a+_zZPofjn'
 MONGO_URI = 'mongodb+srv://bentaouiloussama:B7kSFB59sVz39b7l@cluster0.z3xqhep.mongodb.net/rule_mining'
 MONGO_DB_NAME = 'rule_mining'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+# Other password for elasticsearch : Nfk6eckgfUx0jhTcPb_G   
 
-# Other password for elasticsearch : Nfk6eckgfUx0jhTcPb_G
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dkez34lgd',
+    'API_KEY': '134453954271782',
+    'API_SECRET': 'TCcmLqtbLKIkLC5YyecXPeX6Q70'
+}
+
+cloudinary.config(
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET']
+)
