@@ -145,6 +145,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 
 # Additional settings for your database and other configurations
-PASSWORD = 'Nfk6eckgfUx0jhTcPb_G'
+PASSWORD = 'kl8mEE84P8a+_zZPofjn'
 MONGO_URI = 'mongodb+srv://bentaouiloussama:B7kSFB59sVz39b7l@cluster0.z3xqhep.mongodb.net/rule_mining'
 MONGO_DB_NAME = 'rule_mining'
+
+# Other password for elasticsearch : Nfk6eckgfUx0jhTcPb_G

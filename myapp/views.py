@@ -176,8 +176,10 @@ def create_member_by_owner(request):
         if not fonction:
             return JsonResponse({'error': 'Fonction is required'}, status=400)
 
-        if Member.objects.filter(username=username).exists() or Member.objects.filter(email=email).exists():
-            return JsonResponse({'error': 'Username or email already exists'}, status=400)
+        if Member.objects.filter(username=username).exists():
+            return JsonResponse({'error': 'Username already exists'}, status=400)
+        if Member.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'Email already exists'}, status=400)
 
         hashed_password = make_password(password)
         new_member = Member.objects.create(
@@ -203,6 +205,7 @@ def create_member_by_owner(request):
     except Exception as e:
         print("Error creating member by owner", e)
         return JsonResponse({'error': 'Internal server error'}, status=500)
+
 
 
 @csrf_exempt
