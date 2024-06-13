@@ -29,12 +29,14 @@ def get_user_model(role):
 def extract_token_from_headers(view_func):
     def _wrapped_view(request, *args, **kwargs):
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        print("Token from headers:", token)
         if not token:
             return JsonResponse({'error': 'Token not provided'}, status=401)
 
         try:
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             request.user = decoded
+            
         except jwt.ExpiredSignatureError:
             return JsonResponse({'error': 'Token has expired'}, status=401)
         except jwt.InvalidTokenError:
@@ -111,6 +113,11 @@ def login_user(request):
                 'email': user.email,
                 'role': user.role,
                 'fonction': user.fonction,
+                'avatar': user.avatar, 
+                'full_name': user.full_name,
+                'address': user.address,
+                'phone_number': user.phone_number,
+                'bio': user.bio,
                 'members': list(user.members.values('id', 'username')) if user.role == "owner" else []
             }
 
@@ -124,6 +131,7 @@ def login_user(request):
                     'email': user.email,
                     'role': user.role,
                     'fonction': user.fonction
+
                 },
                 'members': token_payload['members'] if user.role == "owner" else []
             }
@@ -140,9 +148,13 @@ def login_user(request):
 @csrf_exempt
 @extract_token_from_headers
 def get_profile(request):
-    print("Decoded user from token:", request.user)
-    if request.user:
-        return JsonResponse(request.user)
+    if request.method == 'GET' and request.user:
+        print("User data from token:", request.user)
+        user_id = request.user.get('user_id')
+        role = request.user.get('role')
+        Model = get_user_model(role)
+        user = Model.objects.filter(id=user_id).values('id', 'username', 'email', 'role', 'fonction', 'full_name', 'address', 'phone_number', 'bio', 'avatar').first()
+        return JsonResponse(user, safe=False)
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=400)
 
@@ -312,7 +324,7 @@ def list_members_by_owner(request):
             'email': member.email, 
             'role': member.role, 
             'fonction': member.fonction,
-            'avatar': member.avatar.url if member.avatar else None  # Convert avatar to URL
+            'avatar': member.avatar,
         } for member in members]
 
         return JsonResponse(members_list, safe=False, status=200)
@@ -353,7 +365,7 @@ def get_member_by_id(request, member_id):
             'address': member.address,
             'phone_number': member.phone_number,
             'bio': member.bio,
-            'avatar': member.avatar.url if member.avatar else None,# Convert avatar to URL
+            'avatar': member.avatar,
             'owner': member.owner.id
         }, status=200)
 
@@ -430,32 +442,19 @@ def delete_rule(request, rule_id):
     
 
 
-
-
-
 @csrf_exempt
-@require_http_methods(["PUT"])
-def update_user_profile(request):
-    try:
-        user_data = request.user
-        user_id = user_data['user_id']
-        role = user_data['role']
+@extract_token_from_headers
+def update_profile(request):
+    if request.method == 'PUT':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            print("Data from request:", data)
+            user_id = request.user.get('user_id')
+            role = request.user.get('role')
 
-        Model = get_user_model(role)
-        user = Model.objects.get(id=user_id)
+            Model = get_user_model(role)
+            user = Model.objects.get(id=user_id)
 
-        data = request.POST.get('data')
-        if data:
-            data = json.loads(data)  # Extracting JSON data
-
-        avatar_file = request.FILES.get('avatar')  # Extracting avatar file
-
-        if avatar_file:  # If avatar file is provided, handle avatar update with Cloudinary
-            upload_result = cloudinary.uploader.upload(avatar_file)
-            user.avatar = upload_result['url']
-
-        # Update other user fields based on the JSON data
-        if data:
             if 'username' in data:
                 user.username = data['username']
             if 'email' in data:
@@ -468,28 +467,17 @@ def update_user_profile(request):
                 user.phone_number = data['phone_number']
             if 'bio' in data:
                 user.bio = data['bio']
+            if 'avatar' in data:
+                user.avatar = data['avatar']  
 
-        user.save()
+            user.save()
 
-        response_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'full_name': user.full_name,
-            'address': user.address,
-            'phone_number': user.phone_number,
-            'bio': user.bio,
-            'role': user.role,
-            'fonction': user.fonction,
-            'avatar': user.avatar.url if user.avatar else None
-        }
+            return JsonResponse({'message': 'Profile updated successfully'}, status=200)
 
-        return JsonResponse(response_data, status=200)
+        except Model.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except Exception as e:
+            print("Error updating user profile", e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
 
-    except Model.DoesNotExist:
-        return JsonResponse({'error': 'User not found'}, status=404)
-    except ValueError as ve:
-        return JsonResponse({'error': str(ve)}, status=400)
-    except Exception as e:
-        print("Error updating user profile", e)
-        return JsonResponse({'error': 'Internal server error'}, status=500)
+

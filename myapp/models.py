@@ -1,5 +1,4 @@
 from django.db import models
-from cloudinary.models import CloudinaryField
 
 class Owner(models.Model):
     username = models.CharField(max_length=150, unique=True)
@@ -11,7 +10,7 @@ class Owner(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    avatar = CloudinaryField('avatar', blank=True, null=True)
+    avatar = models.CharField(max_length=255, blank=True, null=True)  # Changed to CharField for storing Cloudinary image URL
     def __str__(self):
         return self.username
 
@@ -26,7 +25,7 @@ class Member(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    avatar = CloudinaryField('avatar', blank=True, null=True)
+    avatar = models.CharField(max_length=255, blank=True, null=True)  # Changed to CharField for storing Cloudinary image URL
 
     def __str__(self):
         return self.username
