@@ -1,0 +1,29 @@
+name: Pre-existing Condition
+description: If the insured individual has a pre-existing medical condition, then the premium for sickness insurance will be higher.
+
+name: Hospitalization Coverage
+description: If the policy includes hospitalization coverage, then the premium for sickness insurance will increase.
+
+name: Outpatient Treatment
+description: If outpatient treatment is covered by the policy, the sickness insurance premium may be adjusted.
+
+name: Coverage Limit
+description: If the policy has a higher coverage limit for sickness-related expenses, the premium will be higher.
+
+name: Surgical Procedures
+description: If the policy covers major surgical procedures, the sickness insurance premium may increase.
+
+name: Prescription Medications
+description: If prescription medications are covered by the policy, the sickness insurance premium may be adjusted.
+
+name: Emergency Room Visits
+description: If emergency room visits are covered by the policy, the sickness insurance premium may be adjusted.
+
+name: Specialist Consultations
+description: If specialist consultations are covered by the policy, the sickness insurance premium may increase.
+
+name: Maternity Coverage
+description: If maternity coverage is included in the policy, the sickness insurance premium may be adjusted.
+
+name: Deductible Amount
+description: The deductible amount may affect the premium for sickness insurance.

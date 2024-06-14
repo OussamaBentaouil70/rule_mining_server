@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',  # Ensure corsheaders is listed here
     'myapp',
     'mistral',
+    'rules'
 ]
 
 MIDDLEWARE = [
@@ -148,7 +149,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 
 # Additional settings for your database and other configurations
 PASSWORD = 'Nfk6eckgfUx0jhTcPb_G'
-MONGO_URI = 'mongodb+srv://bentaouiloussama:B7kSFB59sVz39b7l@cluster0.z3xqhep.mongodb.net/rule_mining'
+MONGO_URI = 'mongodb+srv://bentaouiloussama:B7kSFB59sVz39b7l@cluster0.z3xqhep.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 MONGO_DB_NAME = 'rule_mining'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

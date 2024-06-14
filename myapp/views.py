@@ -17,7 +17,9 @@ import json
 from django.db import models
 from pymongo import MongoClient
 from django.core.files.storage import default_storage
-import cloudinary.uploader
+from bson import ObjectId
+from pymongo import ReturnDocument
+from django.core.serializers.json import DjangoJSONEncoder
 
 User = get_user_model()
 
@@ -389,7 +391,7 @@ def get_rules_by_tag(request):
             },
         }
 
-        url = "https://localhost:9200/rules/_search?filter_path=hits.hits._source"
+        url = "https://localhost:9200/index_rules/_search?filter_path=hits.hits._source"
 
         auth_header = "Basic " + base64.b64encode(f"elastic:{settings.PASSWORD}".encode()).decode()
 
@@ -480,4 +482,66 @@ def update_profile(request):
             print("Error updating user profile", e)
             return JsonResponse({'error': 'Internal server error'}, status=500)
 
+@csrf_exempt
+@extract_token_from_headers
+def get_rules_from_mongodb_by_tag(request):
+    if request.method == 'GET':
+        try:
+            user = request.user
+            tag = user.get('fonction', '')
+            
+            client = MongoClient(settings.MONGO_URI)
+            db = client['vectorDB']
+            collection_name = f"Rule_{tag}"
+            collection = db[collection_name]
 
+            rules = list(collection.find({"tag": tag}))
+
+            # Convert ObjectId to string
+            for rule in rules:
+                rule['_id'] = str(rule['_id'])
+
+            return JsonResponse(rules, safe=False, status=200)
+
+        except Exception as e:
+            print("Error while fetching rules from MongoDB by tag", e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+
+@csrf_exempt
+@extract_token_from_headers
+def edit_rule_by_id(request, rule_id):
+    if request.method == 'PUT':
+        try:
+            # Extracting user information
+            user = request.user
+            tag = user.get('fonction', '')
+            
+            # Parsing the request body to get the updated rule data
+            data = json.loads(request.body)
+            updated_data = data
+
+            if not updated_data:
+                return JsonResponse({'error': 'Invalid data'}, status=400)
+
+            # Connecting to MongoDB
+            client = MongoClient(settings.MONGO_URI)
+            db = client['vectorDB']
+            collection_name = f"Rule_{tag}"
+            collection = db[collection_name]
+
+            # Updating the rule
+            result = collection.update_one(
+                {"_id": ObjectId(rule_id)},
+                {"$set": updated_data}
+            )
+
+            if result.matched_count == 0:
+                return JsonResponse({'error': 'Rule not found'}, status=404)
+
+            return JsonResponse({'message': 'Rule updated successfully'}, status=200)
+
+        except Exception as e:
+            print("Error while updating the rule in MongoDB", e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

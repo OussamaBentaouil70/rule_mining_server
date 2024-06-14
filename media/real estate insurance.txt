@@ -1,0 +1,29 @@
+name: Property Location
+description: The location of the property can impact the property insurance premium.
+
+name: Building Structure
+description: The type and structure of the building can affect the property insurance cost.
+
+name: Fire Protection
+description: The presence of fire protection measures in the property can influence the insurance premium.
+
+name: Natural Disaster Risk
+description: Properties in high-risk natural disaster areas may have higher insurance premiums.
+
+name: Property Age
+description: The age of the property can impact the insurance cost and coverage options.
+
+name: Replacement Cost
+description: The estimated cost to replace or repair the property affects the insurance premium.
+
+name: Security Features
+description: Security systems and features in the property can affect insurance rates.
+
+name: Liability Coverage
+description: Including liability coverage in the policy may impact the property insurance premium.
+
+name: Additional Structures
+description: Coverage for additional structures on the property may affect the insurance cost.
+
+name: Personal Property Value
+description: The value of personal belongings covered by the policy can influence the premium.

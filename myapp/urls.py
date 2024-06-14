@@ -14,4 +14,6 @@ urlpatterns = [
     path('profile/', get_profile, name='profile'),
     path('logout/', logout, name='logout'),
     path('update_profile/', update_profile, name='update_user_profile'),
+    path('get_rules/', get_rules_from_mongodb_by_tag, name='get_rules_from_mongodb_by_tag'),
+    path('edit_rule/<str:rule_id>/', edit_rule_by_id, name='edit_rule_in_mongodb_by_id'),
 ]

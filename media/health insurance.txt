@@ -1,0 +1,29 @@
+name: Annual Check-up Coverage
+description: If the policy covers annual check-ups, then the premium for health insurance may be higher.
+
+name: Dental Coverage
+description: If the policy includes dental coverage, the premium for health insurance will increase.
+
+name: Vision Coverage
+description: If the policy covers vision care, including eye exams and glasses, the health insurance premium may be adjusted upwards.
+
+name: Mental Health Services
+description: If mental health services such as counseling and therapy are covered, the health insurance premium may increase.
+
+name: Wellness Programs
+description: If the policy includes access to wellness programs, gym memberships, or smoking cessation programs, the health insurance premium may be adjusted.
+
+name: Family Coverage
+description: If the policy provides coverage for family members, the health insurance premium will be higher.
+
+name: No Claim Bonus
+description: If the policy offers a no-claim bonus, the premium may be adjusted based on the claim history.
+
+name: Alternative Medicine
+description: If alternative medicine treatments like acupuncture or chiropractic care are covered, the health insurance premium may increase.
+
+name: Preventive Services
+description: If preventive services such as vaccinations and screenings are covered, the health insurance premium may be adjusted.
+
+name: Co-payment Option
+description: The presence of a co-payment option, where the insured pays a part of the medical expenses, may affect the health insurance premium.
