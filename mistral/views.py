@@ -19,6 +19,8 @@ from nltk.tokenize import word_tokenize
 import torch
 from sentence_transformers import SentenceTransformer
 import os
+from pymongo import MongoClient
+from django.conf import settings
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -53,6 +55,26 @@ def transform_text(input_text):
     transformed_text = re.sub(r'([A-Za-z]+)\s([A-Za-z]+)', r'\1\2', transformed_text)
     return transformed_text
 
+# 
+def retrieve_rules_by_tag_db(tag):
+    try:
+        client = MongoClient(settings.MONGO_URI)
+        db = client['vectorDB']
+        collection_name = f"Rule_{tag}"
+        collection = db[collection_name]
+
+        rules = list(collection.find({"tag": tag}))
+
+        # Convert ObjectId to string
+        for rule in rules:
+            rule['_id'] = str(rule['_id'])
+
+        return rules
+    except Exception as e:
+        print(f"Error while retrieving rules from MongoDB: {e}")
+        return None
+
+
 # Function to retrieve rules based on a specific tag from the Elasticsearch database
 def retrieve_rules_by_tag(tag):
     # Prepare the query to retrieve rules based on the tag
@@ -86,7 +108,43 @@ def calculate_similarity(embedding1, embedding2):
     return similarity_score
 
 
+# Function to retrieve rules based on the context of the prompt from the MongoDB database
+def retrieve_rule_by_similarity_db(prompt, tag):
+    try:
+        client = MongoClient(settings.MONGO_URI)
+        db = client['vectorDB']
+        collection_name = f"Rule_{tag}"
+        collection = db[collection_name]
 
+        rules = list(collection.find({"tag": tag}))
+
+        # Convert ObjectId to string
+        for rule in rules:
+            rule['_id'] = str(rule['_id'])
+
+        max_similarity = 0
+        best_matched_rule = None
+
+        # Encode the prompt once
+        doc1_embedding = model.encode(prompt, convert_to_tensor=True)
+
+        # Compare rules descriptions with the prompt and find the most similar rule
+        for rule in rules:
+            doc2_embedding = model.encode(rule.get('description', ''), convert_to_tensor=True)
+            similarity_score = calculate_similarity(doc1_embedding, doc2_embedding)
+
+            if similarity_score > max_similarity:
+                max_similarity = similarity_score
+                best_matched_rule = rule
+
+        return best_matched_rule
+
+    except Exception as e:
+        print(f"Error while retrieving rule by similarity from MongoDB: {e}")
+        return None
+
+
+# Function to retrieve rules based on the context of the prompt from the Elasticsearch database
 def retrieve_rule_by_similarity(prompt, tag):
     # Prepare the query to filter rules by tag
     query = {
@@ -124,8 +182,6 @@ def retrieve_rule_by_similarity(prompt, tag):
     return None
 
 
-
-
 # View to generate text using Mistral API and retrieve rules based on a tag matching the prompt
 @csrf_exempt
 @extract_token_from_headers
@@ -149,11 +205,11 @@ def generate_text(request):
             phrases = ["give rules", "rules"]
 
             if any(phrase in context.lower() for phrase in phrases):
-             rules = retrieve_rules_by_tag(tag)
+             rules = retrieve_rules_by_tag_db(tag)
             else:
              # Retrieve rules based on the context of the prompt from the Elasticsearch database
                 # rules = retrieve_rules_by_context(context, tag)
-                rules = retrieve_rule_by_similarity(prompt, tag)
+                rules = retrieve_rule_by_similarity_db(prompt, tag)
             
 
             if not rules:
