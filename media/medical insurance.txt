@@ -1,0 +1,29 @@
+name: Hospitalization Coverage
+description: If the policy covers expenses related to hospitalization, surgeries, and in-patient care, the medical insurance premium may be higher.
+
+name: Prescription Drugs Coverage
+description: If the policy includes coverage for prescription medications, the medical insurance premium will increase.
+
+name: Emergency Services
+description: If emergency services like ambulance rides and emergency room visits are covered, the medical insurance premium may be adjusted upwards.
+
+name: Maternity Care
+description: If the policy covers maternity care, including prenatal visits, delivery, and postnatal care, the medical insurance premium may increase.
+
+name: Rehabilitation Services
+description: If rehabilitation services such as physical therapy or occupational therapy are covered, the medical insurance premium may be adjusted.
+
+name: Specialist Consultations
+description: If the policy provides coverage for consultations with specialist doctors, the medical insurance premium will be higher.
+
+name: Travel Insurance
+description: If the policy offers coverage for medical emergencies while traveling, the medical insurance premium may be adjusted based on the extent of coverage.
+
+name: Durable Medical Equipment
+description: If durable medical equipment like wheelchairs or oxygen tanks are covered, the medical insurance premium may increase.
+
+name: Second Opinion Services
+description: If the policy includes coverage for seeking second opinions from healthcare professionals, the medical insurance premium may be adjusted.
+
+name: Home Healthcare
+description: If home healthcare services such as nursing care or medical equipment rentals are covered, the medical insurance premium may be adjusted.

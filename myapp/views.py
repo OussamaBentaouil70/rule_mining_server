@@ -545,3 +545,70 @@ def edit_rule_by_id(request, rule_id):
             return JsonResponse({'error': 'Internal server error'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+@extract_token_from_headers
+def add_rule(request):
+    if request.method == 'POST':
+        try:
+            # Extracting user information
+            user = request.user
+            tag = user.get('fonction', '')
+
+            # Parsing the request body to get the new rule data
+            data = json.loads(request.body)
+            new_rule = data
+            new_rule['tag'] = tag
+
+            if not new_rule:
+                return JsonResponse({'error': 'Invalid data'}, status=400)
+
+            # Connecting to MongoDB
+            client = MongoClient(settings.MONGO_URI)
+            db = client['vectorDB']
+            collection_name = f"Rule_{tag}"
+            collection = db[collection_name]
+
+            # Inserting the new rule
+            result = collection.insert_one(new_rule)
+            new_rule_id = str(result.inserted_id)
+            new_rule['_id'] = new_rule_id
+
+            return JsonResponse(new_rule, status=201)
+
+        except Exception as e:
+            print("Error while adding the rule to MongoDB", e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    
+@csrf_exempt
+@extract_token_from_headers
+def delete_rule(request, rule_id):
+    if request.method == 'DELETE':
+        try:
+            # Extracting user information
+            user = request.user
+            tag = user.get('fonction', '')
+
+            # Connecting to MongoDB
+            client = MongoClient(settings.MONGO_URI)
+            db = client['vectorDB']
+            collection_name = f"Rule_{tag}"
+            collection = db[collection_name]
+
+            # Deleting the rule
+            result = collection.delete_one({"_id": ObjectId(rule_id)})
+
+            if result.deleted_count == 0:
+                return JsonResponse({'error': 'Rule not found'}, status=404)
+
+            return JsonResponse({'message': 'Rule deleted successfully'}, status=200)
+
+        except Exception as e:
+            print("Error while deleting the rule from MongoDB", e)
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
