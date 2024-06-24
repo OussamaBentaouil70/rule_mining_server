@@ -132,7 +132,12 @@ def login_user(request):
                     "username": user.username,
                     'email': user.email,
                     'role': user.role,
-                    'fonction': user.fonction
+                    'fonction': user.fonction,
+                    "avatar": user.avatar,
+                    'full_name': user.full_name,
+                    'address': user.address,
+                    'phone_number': user.phone_number,
+                    'bio': user.bio,
 
                 },
                 'members': token_payload['members'] if user.role == "owner" else []
