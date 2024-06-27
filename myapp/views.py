@@ -476,6 +476,8 @@ def update_profile(request):
                 user.bio = data['bio']
             if 'avatar' in data:
                 user.avatar = data['avatar']  
+            if 'fonction' in data:
+                user.fonction = data['fonction']
 
             user.save()
 

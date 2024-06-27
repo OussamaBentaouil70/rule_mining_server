@@ -13,8 +13,20 @@ from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
 import zipfile
 import csv
-
 from mistral.views import extract_token_from_headers
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Node, Edge
+from .serializers import NodeSerializer, EdgeSerializer
+
+
+
+
+
+
+
+
 
 # Suppress only the single InsecureRequestWarning from urllib3 needed in this context
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -25,7 +37,7 @@ INDEX_NAME = 'index_rules'
  
 # Define the authentication credentials for Elasticsearch
 USERNAME = 'elastic'
-PASSWORD = 'Nfk6eckgfUx0jhTcPb_G'
+PASSWORD = 'kl8mEE84P8a+_zZPofjn'
 
 # Connect to MongoDB Atlas
 client = MongoClient(settings.MONGO_URI)
@@ -242,3 +254,40 @@ def generate_brl_file(rule, directory):
     with open(file_name, 'w') as file:
         file.write(xml_content)
     print(f"Generated BRL file: {file_name}")
+
+
+@api_view(['GET'])
+def get_flow(request):
+    nodes = Node.objects.all()
+    edges = Edge.objects.all()
+
+    node_serializer = NodeSerializer(nodes, many=True)
+    edge_serializer = EdgeSerializer(edges, many=True)
+
+    return Response({
+        "nodes": node_serializer.data,
+        "edges": edge_serializer.data
+    })
+
+@api_view(['POST'])
+def save_flow(request):
+    nodes_data = request.data.get('nodes', [])
+    edges_data = request.data.get('edges', [])
+
+    Node.objects.all().delete()
+    Edge.objects.all().delete()
+
+    for node_data in nodes_data:
+        position = node_data.pop('position')
+        node_data['position_x'] = position['x']
+        node_data['position_y'] = position['y']
+        serializer = NodeSerializer(data=node_data)
+        if serializer.is_valid():
+            serializer.save()
+
+    for edge_data in edges_data:
+        serializer = EdgeSerializer(data=edge_data)
+        if serializer.is_valid():
+            serializer.save()
+
+    return Response({"status": "Flow saved successfully!"})
